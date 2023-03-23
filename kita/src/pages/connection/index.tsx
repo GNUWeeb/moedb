@@ -9,6 +9,7 @@ import { editor } from "monaco-editor"
 import { OneDark } from "@/etc/monaco-theme"
 import { NotificationContext } from "@/context/notification"
 import { runQueryService } from "@/service/query"
+import Image from 'next/image'
 
 export default function ConnectionIndex() {
     const { connection } = useContext(ConnectionContext)
@@ -20,7 +21,7 @@ export default function ConnectionIndex() {
     }>()
     const [query, setQuery] = useState<string | undefined>("")
     const monaco = useMonaco();
-    const [showEditor, setShowEditor] = useState(true)
+    const [showEditor, setShowEditor] = useState(false)
 
     const getData = async () => {
         if (connection != null && table != null) {
@@ -75,7 +76,7 @@ export default function ConnectionIndex() {
                 <div className="flex flex-col w-full h-screen">
                     <div className="h-full overflow-auto">
                         {
-                            rows && connection && (
+                            rows && connection ? (
                                 <div className="m-8 bg-secondary p-8 overflow-y-auto">
                                     <div className="overflow-auto flex bg-secondary w-full">
                                         <table className="border-collapse border w-full">
@@ -95,7 +96,13 @@ export default function ConnectionIndex() {
                                         </table>
                                     </div>
                                 </div>
-                            )
+                            ) : <div className="w-full h-full flex flex-col justify-center items-center">
+                                <div>
+                                    <Image src="/assets/bochi.webp" alt="bochi" width={400} height={400} />
+                                </div>
+
+                            </div>
+
                         }
                     </div>
                     {
