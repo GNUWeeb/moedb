@@ -1,6 +1,6 @@
 import { ConnectionContext } from "@/context/connection"
 import { Navigation } from "@/layout/navigation"
-import { IconEditCircle, IconSettings2, IconSql, IconTerminal2 } from "@tabler/icons-react"
+import { IconEditCircle, IconSettings2, IconSql, IconSquareRoundedX, IconTerminal, IconTerminal2 } from "@tabler/icons-react"
 import React, { useContext, useEffect, useRef, useState } from "react"
 import selectService from "@/service/select"
 import { TableContext } from "@/context/table"
@@ -20,6 +20,7 @@ export default function ConnectionIndex() {
     }>()
     const [query, setQuery] = useState<string | undefined>("")
     const monaco = useMonaco();
+    const [showEditor, setShowEditor] = useState(true)
 
     const getData = async () => {
         if (connection != null && table != null) {
@@ -72,7 +73,7 @@ export default function ConnectionIndex() {
             <div className="pl-[19.5rem] min-h-screen min-w-screen">
                 <Navigation />
                 <div className="flex flex-col w-full h-screen">
-                    <div className="h-3/4 overflow-auto">
+                    <div className="h-full overflow-auto">
                         {
                             rows && connection && (
                                 <div className="m-8 bg-secondary p-8 overflow-y-auto">
@@ -98,21 +99,42 @@ export default function ConnectionIndex() {
                         }
                     </div>
                     {
-                        monaco && <div className="m-4 bg-dark-secondary">
-                            <MonacoEditor
-                                defaultLanguage="sql"
-                                theme="onedark"
-                                height="30vh"
-                                className="font-bold font-editor border  h-full py-4"
-                                onMount={handleEditorDidMount}
-                                onChange={(e) => setQuery(e)}
-                            />
-                            <button className="p-4" onClick={() => runQuery()}>
-                                <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
-                                    <IconTerminal2 size={18} />
-                                    <span className="ml-2">run</span>
-                                </div>
-                            </button>
+                        <div className="bg-dark-secondary inset-0 justify-end">
+                            {
+                                monaco && showEditor && <>
+                                    <MonacoEditor
+                                        defaultLanguage="sql"
+                                        theme="onedark"
+                                        height="30vh"
+                                        className="font-bold font-editor border  h-full py-4"
+                                        onMount={handleEditorDidMount}
+                                        onChange={(e) => setQuery(e)}
+                                    />
+                                    <button className="p-4" onClick={() => runQuery()}>
+                                        <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
+                                            <IconTerminal2 size={18} />
+                                            <span className="ml-2">run</span>
+                                        </div>
+                                    </button>
+                                    <button className="p-4" onClick={() => setShowEditor(false)}>
+                                        <div className="flex flex-row items-center bg-red px-2 rounded-md text-dark-secondary">
+                                            <IconSquareRoundedX size={18} />
+                                            <span className="ml-2">close</span>
+                                        </div>
+                                    </button>
+                                </>
+                            }
+                            {
+                                !showEditor && <>
+                                    <button className="p-4" onClick={() => setShowEditor(true)}>
+                                        <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
+                                            <IconTerminal size={18} />
+                                            <span className="ml-2">new query</span>
+                                        </div>
+                                    </button>
+                                </>
+                            }
+
                         </div>
                     }
                 </div>
