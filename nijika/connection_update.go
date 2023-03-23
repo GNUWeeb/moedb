@@ -21,7 +21,7 @@ type updateConnRequest struct {
 func updateConnectionQuery(ctx context.Context, e connectionEntity) error {
 	query := `
 		UPDATE connection SET
-			name=:name
+			name=:name,
 			driver=:driver,
 			host=:host,
 			port=:port,

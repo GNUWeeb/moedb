@@ -12,7 +12,13 @@ import (
 func tableGetListQuery(ctx context.Context, connID int) ([]string, error) {
 
 	t := []string{}
-	query := "SELECT table_name FROM information_schema.tables"
+	query := `
+			SELECT tablename FROM pg_catalog.pg_tables
+				WHERE schemaname != 'pg_catalog' 
+				AND schemaname != 'information_schema'
+			ORDER BY tablename ASC
+		`
+
 	conn, exists := externalDB[connID]
 	if !exists {
 		return t, errors.New("connection not found")

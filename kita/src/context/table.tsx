@@ -1,4 +1,4 @@
-import { Connection } from '@/service/get_connection';
+import { Connection } from "@/type/connection"
 import React, {
   createContext,
   useState,

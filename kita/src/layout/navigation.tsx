@@ -10,7 +10,7 @@ import { useContext, useEffect, useState } from "react"
 
 export const Navigation = () => {
     const { connection } = useContext(ConnectionContext)
-    const { setTable } = useContext(TableContext)
+    const { setTable, table } = useContext(TableContext)
     const [listTable, setListTable] = useState<Array<string>>([])
     const [showSubmenu, setShowSubmenu] = useState(false)
 
@@ -35,32 +35,37 @@ export const Navigation = () => {
     }
 
     return (
-        <div className="lg:block bg-white fixed z-20 inset-0 top-16 right-auto w-[19.5rem] overflow-y-auto overflow-x-hidden">
-                <nav className="relative w-full bg-white">
-                    <div className="sticky top-0 bg-white">
-                        <div>
-                            <NavHome />
-                        </div>
-                        <NavTable onClick={handleClick} />
+        <div className="lg:block bg-secondary fixed z-20 inset-0 right-auto w-[19.5rem] overflow-y-auto overflow-x-hidden">
+            <nav className="relative w-full bg-secondary">
+                <div className="sticky top-0 bg-secondary">
+                    <div>
+                        <NavHome />
                     </div>
-                    <div className="bg-white w-full">
-                        {
-                            showSubmenu ? (
-                                listTable.map((value, index) => {
-                                    return <div>
-                                        <button className="flex flex-row py-2 ml-8" onClick={() => setActiveTable(value)}>
-                                            <IconTableFilled size={12} className="self-center" />
-                                            <div key={index} className="self-center ml-2 text-sm">{value}</div>
-                                        </button>
-                                    </div>
-                                })
-                            ) : null
-                        }
-                    </div>
-                    <div className="sticky bottom-0 bg-white">
-                        <NavActiveConnection />
-                    </div>
-                </nav>
+                    <NavTable onClick={handleClick} />
+                </div>
+                <div className="w-full bg-primary">
+                    {
+                        showSubmenu ? (
+                            listTable.map((value, index) =>
+                                value == table ? <div>
+                                    <button className="flex flex-row py-2 ml-8 w-full" onClick={() => setActiveTable(value)}>
+                                        <IconTableFilled size={12} className="self-center text-yellow" />
+                                        <div key={index} className="self-center ml-2 text-sm text-green">{value}</div>
+                                    </button>
+                                </div> : <div>
+                                    <button className="flex flex-row py-2 ml-8 w-full" onClick={() => setActiveTable(value)}>
+                                        <IconTableFilled size={12} className="self-center text-purple" />
+                                        <div key={index} className="self-center ml-2 text-sm">{value}</div>
+                                    </button>
+                                </div>
+                            )
+                        ) : null
+                    }
+                </div>
+                <div className="sticky bottom-0 bg-secondary">
+                    <NavActiveConnection />
+                </div>
+            </nav>
         </div>
     )
 }

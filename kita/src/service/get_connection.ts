@@ -13,12 +13,10 @@ export type Connection = {
 
 export async function getConnectionService() {
     const url = `${process.env.NEXT_PUBLIC_API_URL}/connection`
-    console.log(url)
     try {
         const { data } = await axios.get(url)
         return Promise.resolve(data)
     } catch (err) {
-        console.log(err)
-        Promise.reject(err)
+        return Promise.reject(err)
     }
 }

@@ -19,8 +19,6 @@ type getConnectionResponse struct {
 	Password string `json:"password"`
 }
 
-type getListConnectionResponse []getConnectionResponse
-
 func connectionGetListQuery(ctx context.Context) ([]connectionEntity, error) {
 
 	conns := []connectionEntity{}
@@ -53,7 +51,7 @@ func connectionGetList(c *fiber.Ctx) error {
 		return c.Status(http.StatusInternalServerError).JSON(res)
 	}
 
-	resData := getListConnectionResponse{}
+	resData := []getConnectionResponse{}
 	for _, v := range conns {
 		resData = append(resData, getConnectionResponse(v))
 	}

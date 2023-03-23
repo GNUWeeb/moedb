@@ -43,9 +43,10 @@ func main() {
 	app.Use(cors.New())
 	app.Use(logger.New())
 
+	app.Get("/connection/:id/connect", connectionConnect)
+	app.Delete("/connection/:id", deleteConnnection)
 	app.Post("/connection", createConnection)
 	app.Get("/connection", connectionGetList)
-	app.Get("/connection/:id/connect", connectionConnect)
 	app.Put("/connection", updateConnection)
 	app.Get("/table/:connection_id", tableGetList)
 	app.Post("/data", dataGetList)

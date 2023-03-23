@@ -6,7 +6,6 @@ export async function connectService(connectionID: number) {
         const { data } = await axios.get(url)
         return Promise.resolve(data)
     } catch (err) {
-        console.log(err)
-        Promise.reject(err)
+        return Promise.reject(err)
     }
 }
