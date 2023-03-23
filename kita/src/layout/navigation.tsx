@@ -3,6 +3,7 @@ import { NavConnection } from "@/components/nav_menu/connection"
 import { NavHome } from "@/components/nav_menu/home"
 import { NavTable } from "@/components/nav_menu/table"
 import { ConnectionContext } from "@/context/connection"
+import { NotificationContext } from "@/context/notification"
 import { TableContext } from "@/context/table"
 import { getTableService } from "@/service/get_table"
 import { IconTableFilled } from "@tabler/icons-react"
@@ -13,13 +14,15 @@ export const Navigation = () => {
     const { setTable, table } = useContext(TableContext)
     const [listTable, setListTable] = useState<Array<string>>([])
     const [showSubmenu, setShowSubmenu] = useState(false)
+    const { setNotification } = useContext(NotificationContext)
 
     useEffect(() => {
         if (connection != null) {
             getTableService(connection.id).then(res => {
                 setListTable(res.data)
             }).catch(err => {
-                console.log(err)
+                let error = err as Error
+                setNotification({ message: error.message, type: "error" })
             })
         }
     }, [connection])

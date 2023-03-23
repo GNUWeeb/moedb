@@ -50,6 +50,7 @@ func main() {
 	app.Put("/connection", updateConnection)
 	app.Get("/table/:connection_id", tableGetList)
 	app.Post("/data", dataGetList)
+	app.Post("/query", rawsQuery)
 
 	app.Listen(":7000")
 

@@ -1,14 +1,14 @@
 import { ConnectionContext } from "@/context/connection"
 import { Navigation } from "@/layout/navigation"
-import { IconEditCircle, IconSettings2 } from "@tabler/icons-react"
-import React, { useContext, useEffect, useState } from "react"
+import { IconEditCircle, IconSettings2, IconSql, IconTerminal2 } from "@tabler/icons-react"
+import React, { useContext, useEffect, useRef, useState } from "react"
 import selectService from "@/service/select"
 import { TableContext } from "@/context/table"
-import { getTableService } from "@/service/get_table"
 import MonacoEditor, { useMonaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor"
 import { OneDark } from "@/etc/monaco-theme"
 import { NotificationContext } from "@/context/notification"
+import { runQueryService } from "@/service/query"
 
 export default function ConnectionIndex() {
     const { connection } = useContext(ConnectionContext)
@@ -18,6 +18,7 @@ export default function ConnectionIndex() {
         values: [],
         columns: []
     }>()
+    const [query, setQuery] = useState<string | undefined>("")
     const monaco = useMonaco();
 
     const getData = async () => {
@@ -32,28 +33,10 @@ export default function ConnectionIndex() {
         }
     }
 
-
-    const getTable = async () => {
-        if (connection != null && table != null) {
-            try {
-                const { data } = await getTableService(connection.id)
-                setTable(data)
-            } catch (err) {
-                let error = err as Error
-                setNotification({ message: error.message, type: "error" })
-            }
-        }
-    }
-
     const [selectedData, setSelectData] = useState<number>()
     const handleR = (x: number) => {
         setSelectData(x)
     }
-
-    useEffect(() => {
-        getTable()
-        monaco?.editor.defineTheme('onedark', OneDark as editor.IStandaloneThemeData)
-    }, [])
 
     useEffect(() => {
         getData()
@@ -63,7 +46,26 @@ export default function ConnectionIndex() {
         if (monaco != null) {
             monaco.editor.defineTheme('onedark', OneDark as editor.IStandaloneThemeData)
         }
+        console.log(monaco)
     }, [monaco])
+
+    const valueGetter = useRef();
+
+    function handleEditorDidMount(_valueGetter: any) {
+        valueGetter.current = _valueGetter.current;
+    }
+
+    async function runQuery() {
+        if (connection != null) {
+            try {
+                const { data } = await runQueryService({ connection_id: connection.id, query: query as string })
+                setRows(data)
+            } catch (err) {
+                let error = err as Error
+                setNotification({ message: error.message, type: "error" })
+            }
+        }
+    }
 
     return (
         <div className="bg-primary">
@@ -73,7 +75,7 @@ export default function ConnectionIndex() {
                     <div className="h-3/4 overflow-auto">
                         {
                             rows && connection && (
-                                <div className="m-8 rounded-2xl bg-secondary p-8 overflow-y-auto">
+                                <div className="m-8 bg-secondary p-8 overflow-y-auto">
                                     <div className="overflow-auto flex bg-secondary w-full">
                                         <table className="border-collapse border w-full">
                                             <ShowColumn data={rows.columns} />
@@ -95,12 +97,23 @@ export default function ConnectionIndex() {
                             )
                         }
                     </div>
-                    {monaco && <MonacoEditor
-                        defaultLanguage="sql"
-                        theme="onedark"
-                        height="25vh"
-                        className="font-bold font-editor border h-full"
-                    />
+                    {
+                        monaco && <div className="m-4 bg-dark-secondary">
+                            <MonacoEditor
+                                defaultLanguage="sql"
+                                theme="onedark"
+                                height="30vh"
+                                className="font-bold font-editor border  h-full py-4"
+                                onMount={handleEditorDidMount}
+                                onChange={(e) => setQuery(e)}
+                            />
+                            <button className="p-4" onClick={() => runQuery()}>
+                                <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
+                                    <IconTerminal2 size={18} />
+                                    <span className="ml-2">run</span>
+                                </div>
+                            </button>
+                        </div>
                     }
                 </div>
             </div>
