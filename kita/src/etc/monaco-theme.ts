@@ -19,19 +19,19 @@ export const OneDark = {
             "token": "constant.numeric"
         },
         {
-            "foreground": "e59e67",
+            "foreground": "51a39f",
             "token": "constant.language"
         },
         {
-            "foreground": "e59e67",
+            "foreground": "51a39f",
             "token": "keyword"
         },
         {
-            "foreground": "e59e67",
+            "foreground": "51a39f",
             "token": "storage"
         },
         {
-            "foreground": "e59e67",
+            "foreground": "51a39f",
             "token": "storage.type"
         },
         {
@@ -48,7 +48,7 @@ export const OneDark = {
             "token": "entity.name.function"
         },
         {
-            "foreground": "e59e67",
+            "foreground": "51a39f",
             "token": "entity.name.tag"
         },
         {
