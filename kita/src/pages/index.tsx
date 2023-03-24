@@ -92,7 +92,7 @@ export default function Home() {
                                                 <DriverIcon driver={value.driver} />
                                             </div>
                                             <div className="w-full ml-4">
-                                                <button onClick={() => connect(value)}>
+                                                <button onClick={() => connect(value)} className="w-full">
                                                     <div className="flex flex-col space-y-2">
                                                         <div className="flex flex-row items-center">
                                                             <div className="font-bold text-xl text-primary">{value.name[0].toLocaleUpperCase() + value.name.slice(1)}</div>
