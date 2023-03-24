@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import { Query } from "@/type/query"
 
 export async function runQueryService(query: Query) {
@@ -7,6 +7,7 @@ export async function runQueryService(query: Query) {
         const { data } = await axios.post(url, query)
         return Promise.resolve(data)
     } catch (err) {
-        return Promise.reject(err)
+        let error = err as AxiosError
+        return Promise.reject(error.response?.data)
     }
 }

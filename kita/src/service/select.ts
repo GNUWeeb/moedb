@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 
 export default async function selectService(table: string, connID: number) {
     try {
@@ -9,6 +9,7 @@ export default async function selectService(table: string, connID: number) {
         const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/data`, req)
         return Promise.resolve(data)
     } catch (err) {
-        return Promise.reject(err)
+        let error = err as AxiosError
+        return Promise.reject(error.response?.data)
     }
 }

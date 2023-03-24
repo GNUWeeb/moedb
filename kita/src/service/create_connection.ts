@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import { Connection } from "@/type/connection"
 
 export async function createConnectionService(conn: Connection) {
@@ -7,6 +7,7 @@ export async function createConnectionService(conn: Connection) {
         const { data } = await axios.post(url, conn)
         return Promise.resolve(data)
     } catch (err) {
-        return Promise.reject(err)
+        let error = err as AxiosError
+        return Promise.reject(error.response?.data)
     }
 }

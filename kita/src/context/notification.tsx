@@ -43,27 +43,27 @@ export const NotificationProvider: React.FC<{ children: JSX.Element }> = ({ chil
 export const ShowNotification: React.FC<{ notif: Notification }> = ({ notif }) => {
     switch (notif.type) {
         case "warnig":
-            return <div className="fixed z-20 top-4 border-yellow bottom-0 left-100 right-4 w-48 h-16 bg-yellow text-primary block px-4 rounded-lg">
+            return <div className="fixed z-20 top-4 border-yellow bottom-0 left-100 right-4 w-1/5 h-16 bg-yellow text-dark-secondary block px-4 rounded-lg">
                 <div className="flex flex-col justify-center min-h-full min-w-full">
-                    <div>{notif.message}</div>
+                    <div className='text-sm'>{notif.message}</div>
                 </div>
             </div>
         case "error":
-            return <div className="fixed z-20 top-4 border-red bottom-0 left-100 right-4 w-48 h-16 bg-red text-primary block px-4 rounded-lg">
+            return <div className="fixed z-20 top-4 border-green bottom-0 left-100 right-4 w-1/5 h-16 bg-red ttext-dark-secondary block px-4 rounded-lg">
                 <div className="flex flex-col justify-center min-h-full min-w-full">
-                    <div>{notif.message}</div>
+                    <div className='text-sm'>{notif.message}</div>
                 </div>
             </div>
         case "success":
-            return <div className="fixed z-20 top-4 border-green bottom-0 left-100 right-4 w-48 h-16 bg-green text-primary block px-4 rounded-lg">
+            return <div className="fixed z-20 top-4 border-green bottom-0 left-100 right-4 w-1/5 h-16 bg-greentext-dark-secondaryblock px-4 rounded-lg">
                 <div className="flex flex-col justify-center min-h-full min-w-full">
-                    <div>{notif.message}</div>
+                    <div className='text-sm'>{notif.message}</div>
                 </div>
             </div>
         default:
-            return <div className="fixed z-20 top-4 border-blue bottom-0 left-100 right-4 w-48 h-16 bg-blue text-primary block px-4 rounded-r-lg">
+            return <div className="fixed z-20 top-4 border-blue bottom-0 left-100 right-4 w-1/5 h-16 bg-blue text-dark-secondary block px-4 rounded-r-lg">
                 <div className="flex flex-col justify-center min-h-full min-w-full">
-                    <div>{notif.message}</div>
+                    <div className='text-sm'>{notif.message}</div>
                 </div>
             </div>
     }

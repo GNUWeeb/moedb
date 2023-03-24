@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 
 export async function connectService(connectionID: number) {
     const url = `${process.env.NEXT_PUBLIC_API_URL}/connection/${connectionID}/connect`
@@ -6,6 +6,7 @@ export async function connectService(connectionID: number) {
         const { data } = await axios.get(url)
         return Promise.resolve(data)
     } catch (err) {
-        return Promise.reject(err)
+        let error = err as AxiosError
+        return Promise.reject(error.response?.data)
     }
 }
