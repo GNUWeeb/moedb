@@ -48,7 +48,6 @@ export default function ConnectionIndex() {
         if (monaco != null) {
             monaco.editor.defineTheme('onedark', OneDark as editor.IStandaloneThemeData)
         }
-        console.log(monaco)
     }, [monaco])
 
     const valueGetter = useRef();
