@@ -6,7 +6,7 @@ export default async function selectService(table: string, connID: number) {
             table: table,
             connection_id: connID
         }
-        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/data`, req)
+        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/data/list`, req)
         return Promise.resolve(data)
     } catch (err) {
         let error = err as AxiosError
