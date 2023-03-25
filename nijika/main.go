@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -44,14 +46,30 @@ func main() {
 	app.Use(logger.New())
 
 	app.Get("/connection/:id/connect", connectionConnect)
-	app.Delete("/connection/:id", deleteConnnection)
-	app.Post("/connection", createConnection)
-	app.Get("/connection", connectionGetList)
-	app.Put("/connection", updateConnection)
-	app.Get("/table/:connection_id", tableGetList)
-	app.Post("/data", dataGetList)
-	app.Post("/query", rawsQuery)
+	app.Delete("/connection/:id/delete", connnectionDelete)
+	app.Get("/connection/:id/detail", connectionDetail)
+	app.Post("/connection/create", connectionCreate)
+	app.Get("/connection/list", connectionList)
+	app.Put("/connection/update", connectionUpdate)
 
-	app.Listen(":7000")
+	app.Post("/table/list", tableList)
+
+	app.Post("/data/list", dataList)
+	app.Delete("/data/delete", dataDelete)
+	app.Post("/data/batch/delete", dataBatchDelete)
+	app.Post("/data/detail", dataDetail)
+	app.Post("/data/update", dataUpdate)
+	app.Post("/data/batch/update", dataBatchUpdate)
+
+	app.Post("/raw-query", rawsQuery)
+
+	shutDown := make(chan bool, 1)
+	go func() {
+		err = app.Listen(":7000")
+		shutDown <- true
+	}()
+
+	<-shutDown
+	fmt.Println("server shutting down")
 
 }
