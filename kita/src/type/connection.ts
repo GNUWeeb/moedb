@@ -5,6 +5,6 @@ export type Connection = {
     database: string
     host: string
     port: number
-    username: String
-    password: String
+    username: string
+    password: string
 }
