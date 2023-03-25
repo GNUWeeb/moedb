@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -44,6 +45,7 @@ func main() {
 
 	app.Use(cors.New())
 	app.Use(logger.New())
+	app.Use(recover.New())
 
 	app.Get("/connection/:id/connect", connectionConnect)
 	app.Delete("/connection/:id/delete", connnectionDelete)
@@ -55,7 +57,7 @@ func main() {
 	app.Post("/table/list", tableList)
 
 	app.Post("/data/list", dataList)
-	app.Delete("/data/delete", dataDelete)
+	app.Post("/data/delete", dataDelete)
 	app.Post("/data/batch/delete", dataBatchDelete)
 	app.Post("/data/detail", dataDetail)
 	app.Post("/data/update", dataUpdate)
