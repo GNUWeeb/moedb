@@ -55,7 +55,7 @@ export const ShowNotification: React.FC<{ notif: Notification }> = ({ notif }) =
                 </div>
             </div>
         case "success":
-            return <div className="fixed z-20 top-4 border-green bottom-0 left-100 right-4 w-1/5 h-16 bg-greentext-dark-secondaryblock px-4 rounded-lg">
+            return <div className="fixed z-20 top-4 border-green bottom-0 left-100 right-4 w-1/5 h-16 bg-green text-dark-secondary block px-4 rounded-lg">
                 <div className="flex flex-col justify-center min-h-full min-w-full">
                     <div className='text-sm'>{notif.message}</div>
                 </div>

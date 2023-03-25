@@ -8,18 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type getConnectionResponse struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Driver   string `json:"driver"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Database string `json:"database"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-func connectionGetListQuery(ctx context.Context) ([]connectionEntity, error) {
+func connectionListQuery(ctx context.Context) ([]connectionEntity, error) {
 
 	conns := []connectionEntity{}
 	query := "SELECT * FROM connection"
@@ -42,21 +31,21 @@ func connectionGetListQuery(ctx context.Context) ([]connectionEntity, error) {
 	return conns, err
 }
 
-func connectionGetList(c *fiber.Ctx) error {
+func connectionList(c *fiber.Ctx) error {
 
-	res := Response{}
-	conns, err := connectionGetListQuery(c.Context())
+	res := response{}
+	conns, err := connectionListQuery(c.Context())
 	if err != nil {
 		res.Message = err.Error()
 		return c.Status(http.StatusInternalServerError).JSON(res)
 	}
 
-	resData := []getConnectionResponse{}
+	resData := []connectionPresenter{}
 	for _, v := range conns {
-		resData = append(resData, getConnectionResponse(v))
+		resData = append(resData, connectionPresenter(v))
 	}
 
-	res.Message = "OK"
+	res.Message = "success"
 	res.Data = resData
 
 	return c.Status(http.StatusOK).JSON(res)

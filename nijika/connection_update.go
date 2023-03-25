@@ -7,18 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type updateConnRequest struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Driver   string `json:"driver"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Database string `json:"database"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-func updateConnectionQuery(ctx context.Context, e connectionEntity) error {
+func connectionUpdateQuery(ctx context.Context, e connectionEntity) error {
 	query := `
 		UPDATE connection SET
 			name=:name,
@@ -33,10 +22,21 @@ func updateConnectionQuery(ctx context.Context, e connectionEntity) error {
 	return err
 }
 
-func updateConnection(c *fiber.Ctx) error {
+func connectionUpdate(c *fiber.Ctx) error {
 
-	req := updateConnRequest{}
-	res := Response{}
+	type request struct {
+		ID       int    `json:"id"`
+		Name     string `json:"name"`
+		Driver   string `json:"driver"`
+		Host     string `json:"host"`
+		Port     int    `json:"port"`
+		Database string `json:"database"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	req := request{}
+	res := response{}
 
 	err := c.BodyParser(&req)
 	if err != nil {
@@ -45,7 +45,7 @@ func updateConnection(c *fiber.Ctx) error {
 	}
 
 	e := connectionEntity(req)
-	err = updateConnectionQuery(c.Context(), e)
+	err = connectionUpdateQuery(c.Context(), e)
 	if err != nil {
 		res.Message = err.Error()
 		return c.Status(http.StatusInternalServerError).JSON(res)

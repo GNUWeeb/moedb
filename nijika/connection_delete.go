@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func deleteConnectionQuery(ctx context.Context, id int) error {
+func connectionDeleteQuery(ctx context.Context, id int) error {
 	query := `
 		DELETE FROM connection WHERE id = $1	
 	`
@@ -16,8 +16,8 @@ func deleteConnectionQuery(ctx context.Context, id int) error {
 	return err
 }
 
-func deleteConnnection(c *fiber.Ctx) error {
-	res := Response{}
+func connnectionDelete(c *fiber.Ctx) error {
+	res := response{}
 	idStr := c.Params("id")
 
 	id, err := strconv.Atoi(idStr)
@@ -26,7 +26,7 @@ func deleteConnnection(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 
-	err = deleteConnectionQuery(c.Context(), id)
+	err = connectionDeleteQuery(c.Context(), id)
 	if err != nil {
 		res.Message = err.Error()
 		return c.Status(http.StatusInternalServerError).JSON(res)

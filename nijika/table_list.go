@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func tableGetListQuery(ctx context.Context, connID int) ([]string, error) {
+func tableListQuery(ctx context.Context, connID int) ([]string, error) {
 
 	t := []string{}
 	query := `
@@ -42,16 +42,22 @@ func tableGetListQuery(ctx context.Context, connID int) ([]string, error) {
 	return t, err
 }
 
-func tableGetList(c *fiber.Ctx) error {
+func tableList(c *fiber.Ctx) error {
 
-	res := Response{}
-	id, err := c.ParamsInt("connection_id")
+	type request struct {
+		ConnectionID int `json:"connection_id"`
+	}
+
+	req := request{}
+	res := response{}
+
+	err := c.BodyParser(&req)
 	if err != nil {
 		res.Message = err.Error()
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 
-	t, err := tableGetListQuery(c.Context(), id)
+	t, err := tableListQuery(c.Context(), req.ConnectionID)
 	if err != nil {
 		res.Message = err.Error()
 		return c.Status(http.StatusInternalServerError).JSON(res)

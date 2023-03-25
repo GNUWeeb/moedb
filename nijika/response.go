@@ -1,6 +1,6 @@
 package main
 
-type Response struct {
+type response struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }

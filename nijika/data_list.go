@@ -9,17 +9,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type dataGetListRequest struct {
-	ConnectionID int    `json:"connection_id"`
-	Table        string `json:"table"`
-}
-
-func dataGetListQuery(ctx context.Context, p dataGetListRequest) ([]map[string]string, []string, error) {
+func dataListQuery(ctx context.Context, connID int, table string) ([]map[string]string, []string, error) {
 
 	result := make([]map[string]string, 0)
 	col := make([]string, 0)
-	query := "SELECT * FROM " + p.Table
-	conn, ok := externalDB[p.ConnectionID]
+	query := "SELECT * FROM " + table
+	conn, ok := externalDB[connID]
 	if !ok {
 		return result, col, errors.New("connection not found")
 	}
@@ -64,23 +59,28 @@ func dataGetListQuery(ctx context.Context, p dataGetListRequest) ([]map[string]s
 	return result, cols, err
 }
 
-func dataGetList(c *fiber.Ctx) error {
+func dataList(c *fiber.Ctx) error {
 
-	res := Response{}
-	req := dataGetListRequest{}
+	type request struct {
+		ConnectionID int    `json:"connection_id"`
+		Table        string `json:"table"`
+	}
+
+	res := response{}
+	req := request{}
 	err := c.BodyParser(&req)
 	if err != nil {
 		res.Message = err.Error()
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 
-	data, col, err := dataGetListQuery(c.Context(), req)
+	data, col, err := dataListQuery(c.Context(), req.ConnectionID, req.Table)
 	if err != nil {
 		res.Message = err.Error()
 		return c.Status(http.StatusInternalServerError).JSON(res)
 	}
 
-	res.Message = "OK"
+	res.Message = "success"
 	res.Data = map[string]any{
 		"values":  data,
 		"columns": col,

@@ -86,9 +86,9 @@ export default function ConnectionIndex() {
                                                     rows.values.map((value, index) => {
                                                         let x = value as Map<string, any>
                                                         return index == selectedData ? <tr key={index} onClick={() => handleR(index)}>
-                                                            <ShowData data={x} active={true} />
+                                                            <ShowData data={x} active={true} columns={rows.columns} />
                                                         </tr> : <tr key={index} onClick={() => handleR(index)}>
-                                                            <ShowData data={x} active={false} />
+                                                            <ShowData data={x} active={false} columns={rows.columns} />
                                                         </tr>
                                                     })
                                                 }
@@ -151,12 +151,7 @@ export default function ConnectionIndex() {
 }
 
 
-export const ShowData: React.FC<{ data: any, active: boolean }> = ({ data, active }) => {
-    let keys = []
-    for (let key in data) {
-        keys.push(key)
-    }
-
+export const ShowData: React.FC<{ data: any, columns: Array<string>, active: boolean }> = ({ data, columns, active }) => {
     return <>
         {
             active ? <td className="border text-center text-sm bg-dark-secondary">
@@ -170,12 +165,12 @@ export const ShowData: React.FC<{ data: any, active: boolean }> = ({ data, activ
             </td>
         }
         {
-            !active ? keys.map(
+            !active ? columns.map(
                 (value, index) =>
                     <td className="truncate border text-center text-sm overflow-hidden w-4 max-w-sm px-2 py-1" key={index} >
                         {data[value]}
                     </td>
-            ) : keys.map(
+            ) : columns.map(
                 (value, index) =>
                     <td className="truncate border text-center text-sm overflow-hidden w-4 max-w-sm px-2 text-green py-1" key={index} >
                         {data[value]}

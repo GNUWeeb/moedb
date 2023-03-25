@@ -1,5 +1,4 @@
 import { NavActiveConnection } from "@/components/nav_menu/active_connection"
-import { NavConnection } from "@/components/nav_menu/connection"
 import { NavHome } from "@/components/nav_menu/home"
 import { NavTable } from "@/components/nav_menu/table"
 import { ConnectionContext } from "@/context/connection"

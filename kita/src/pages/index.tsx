@@ -43,7 +43,7 @@ export default function Home() {
             const res = await connectService(conn.id)
             if (res) {
                 setConnection(conn)
-                router.push("/connection")
+                router.push("/dashboard")
             }
         } catch (err) {
             let error = err as Error
@@ -124,7 +124,7 @@ export default function Home() {
                                             </div>
                                             <div className="bg-gray1 mx-4" style={{ width: "1.5px" }}></div>
                                             <div className="flex flex-col space-y-2 justify-between">
-                                                <button className="text-aqua">
+                                                <button className="text-aqua" onClick={() => router.push(`/connection/${value.id}`)}>
                                                     <IconEdit size={18} />
                                                 </button>
                                                 <button className="text-red" onClick={() => deleteConnection(value.id)}>

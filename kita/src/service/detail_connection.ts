@@ -1,8 +1,9 @@
 import axios, { AxiosError } from "axios"
 
-export async function getTableService(connectionID: number) {
+export async function getDetailConnectionService(id: number) {
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/connection/${id}/detail`
     try {
-        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/table/list`, { connection_id: connectionID })
+        const { data } = await axios.get(url)
         return Promise.resolve(data)
     } catch (err) {
         let error = err as AxiosError
