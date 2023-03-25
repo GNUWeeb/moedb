@@ -13,7 +13,7 @@ import (
 func connectionConnectQuery(ctx context.Context, connID int) (connectionEntity, error) {
 
 	e := connectionEntity{}
-	query := "SELECT * FROM connection WHERE id = ? LIMIT 1"
+	query := "SELECT * FROM connection WHERE id = $1 LIMIT 1"
 	row := internalDB.QueryRowxContext(ctx, query, connID)
 
 	err := row.StructScan(&e)
@@ -26,7 +26,7 @@ func connectionConnectQuery(ctx context.Context, connID int) (connectionEntity, 
 
 func connectionConnect(c *fiber.Ctx) error {
 
-	res := Response{}
+	res := response{}
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		res.Message = err.Error()
@@ -49,6 +49,6 @@ func connectionConnect(c *fiber.Ctx) error {
 		externalDB[e.ID] = conn
 	}
 
-	res.Message = "OK"
+	res.Message = "success"
 	return c.Status(http.StatusOK).JSON(res)
 }

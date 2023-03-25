@@ -71,7 +71,7 @@ func rawSQLQuery(ctx context.Context, p rawQueryRequest) ([]map[string]string, [
 func rawsQuery(c *fiber.Ctx) error {
 
 	req := rawQueryRequest{}
-	res := Response{}
+	res := response{}
 
 	err := c.BodyParser(&req)
 	if err != nil {

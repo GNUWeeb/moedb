@@ -9,18 +9,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type createConnectionRequest struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Driver   string `json:"driver"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	Database string `json:"database"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-func createConnectionQuery(ctx context.Context, e connectionEntity) error {
+func connectionCreateQuery(ctx context.Context, e connectionEntity) error {
 	query := `INSERT INTO connection (
 		name,
 		driver,
@@ -34,10 +23,21 @@ func createConnectionQuery(ctx context.Context, e connectionEntity) error {
 	return err
 }
 
-func createConnection(c *fiber.Ctx) error {
+func connectionCreate(c *fiber.Ctx) error {
 
-	req := createConnectionRequest{}
-	res := Response{}
+	type request struct {
+		ID       int    `json:"id"`
+		Name     string `json:"name"`
+		Driver   string `json:"driver"`
+		Host     string `json:"host"`
+		Port     int    `json:"port"`
+		Database string `json:"database"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	req := request{}
+	res := response{}
 	err := c.BodyParser(&req)
 	if err != nil {
 		res.Message = err.Error()
@@ -46,7 +46,7 @@ func createConnection(c *fiber.Ctx) error {
 
 	e := connectionEntity(req)
 
-	err = createConnectionQuery(c.Context(), e)
+	err = connectionCreateQuery(c.Context(), e)
 	if err != nil {
 		res.Message = err.Error()
 		return c.Status(http.StatusInternalServerError).JSON(res)
