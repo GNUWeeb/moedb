@@ -15,9 +15,13 @@ func dataBatchDeleteQuery(ctx context.Context, connID int, table string, id []an
 	}
 	defer tx.Rollback()
 
-	query := `
-		DELETE FROM $1 WHERE id = $2
-	`
+	// NOTE:
+	// currently can only update table which has column id
+
+	// TODO:
+	// get unique identifier from table meta data
+	// for dynamic condition update
+	query := "DELETE FROM " + table + "WHERE id = $2"
 
 	for _, v := range id {
 		_, err = tx.ExecContext(ctx, query, table, v)
@@ -48,6 +52,12 @@ func dataBatchDelete(c *fiber.Ctx) error {
 	err := c.BodyParser(&req)
 	if err != nil {
 		res.Message = err.Error()
+		return c.Status(http.StatusBadRequest).JSON(res)
+	}
+
+	_, exists := externalDB[req.ConnectionID]
+	if !exists {
+		res.Message = "connection does not exists, please connect to databse before do operation"
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 
