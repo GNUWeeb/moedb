@@ -12,6 +12,7 @@ import { runQueryService } from "@/service/query"
 import Image from 'next/image'
 import { DeleteDataPayload, deleteDataService } from "@/service/delete_data"
 import { useGetData } from "@/hooks/use_get_data"
+import { batchDeleteService } from "@/service/batch_delete"
 
 export default function ConnectionIndex() {
     const { connection } = useContext(ConnectionContext)
@@ -23,6 +24,7 @@ export default function ConnectionIndex() {
     const { table } = useContext(TableContext)
     const [reload, setReload] = useState(false)
     const [checkBoxList, setCheckBoxList] = useState<Array<Boolean>>([])
+    const [checkedAll, setCheckedAll] = useState(false)
 
     const deleteData = async (p: DeleteDataPayload) => {
         try {
@@ -39,6 +41,12 @@ export default function ConnectionIndex() {
         let box = checkBoxList
         box[x] = !box[x]
         setCheckBoxList([...box])
+    }
+
+    const checkAll = () => {
+        let checkboxes = new Array(rows?.values.length).fill(!checkedAll)
+        setCheckBoxList([...checkboxes])
+        setCheckedAll(!checkedAll)
     }
 
     useEffect(() => {
@@ -87,6 +95,29 @@ export default function ConnectionIndex() {
         }
     }
 
+    const batchDelete = async () => {
+        try {
+            const id: Array<number> = []
+            checkBoxList.forEach((value, index) => {
+                if (value) {
+                    id.push(rows!.values[index]["id"])
+                }
+            })
+
+            await batchDeleteService({
+                connection_id: connection?.id!,
+                id: id,
+                table: table!,
+            })
+            setNotification({ message: "delete rows success", type: "success" })
+            setReload(!reload)
+        } catch (err) {
+            let error = err as Error
+            setNotification({ message: error.message, type: "error" })
+        }
+    }
+
+
     if (connection === undefined || rows === undefined || table === undefined) {
         return <div className="bg-primary">
             <div className="pl-[19.5rem] min-h-screen min-w-screen">
@@ -113,7 +144,7 @@ export default function ConnectionIndex() {
                         <div className="m-8 bg-secondary p-8 overflow-y-auto">
                             <div className="overflow-auto flex bg-secondary w-full">
                                 <table className="border-collapse border w-full">
-                                    <ShowColumn data={rows.columns} />
+                                    <ShowColumn data={rows.columns} checkbox={checkAll} />
                                     <tbody>
                                         {
                                             rows.values.map((value, index) => {
@@ -163,50 +194,54 @@ export default function ConnectionIndex() {
                     </div>
                     {
                         <div className="bg-dark-secondary inset-0 justify-end">
-                            {
-                                monaco && showEditor && <>
-                                    <MonacoEditor
-                                        defaultLanguage="sql"
-                                        theme="onedark"
-                                        height="30vh"
-                                        className="font-bold font-editor border  h-full py-4"
-                                        onMount={handleEditorDidMount}
-                                        onChange={(e) => setQuery(e)}
-                                    />
-                                    <button className="p-4" onClick={() => runQuery()}>
-                                        <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
-                                            <IconTerminal2 size={18} />
-                                            <span className="ml-2">run</span>
-                                        </div>
-                                    </button>
-                                    <button className="p-4" onClick={() => setShowEditor(false)}>
-                                        <div className="flex flex-row items-center bg-red px-2 rounded-md text-dark-secondary">
-                                            <IconSquareRoundedX size={18} />
-                                            <span className="ml-2">close</span>
-                                        </div>
-                                    </button>
-                                </>
-                            }
-                            {
-                                !showEditor && <>
-                                    <button className="p-4" onClick={() => setShowEditor(true)}>
-                                        <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
-                                            <IconTerminal size={18} />
-                                            <span className="ml-2">new query</span>
-                                        </div>
-                                    </button>
-                                </>
-                            }
-                            {
-                                checkBoxList && <>
-                                    <button className="p-4" onClick={() => setShowEditor(true)}>
-                                        <div className="flex flex-row items-center bg-red px-2 rounded-md text-dark-secondary">
-                                            <IconTerminal size={18} />
-                                            <span className="ml-2">delete</span>
-                                        </div>
-                                    </button>
-                                </>
-                            }
+                            <div className="flex flex-row justify-between">
+                                <div>
+                                    {
+                                        monaco && showEditor && <>
+                                            <MonacoEditor
+                                                defaultLanguage="sql"
+                                                theme="onedark"
+                                                height="30vh"
+                                                className="font-bold font-editor border  h-full py-4"
+                                                onMount={handleEditorDidMount}
+                                                onChange={(e) => setQuery(e)}
+                                            />
+                                            <button className="p-4" onClick={() => runQuery()}>
+                                                <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
+                                                    <IconTerminal2 size={18} />
+                                                    <span className="ml-2">run</span>
+                                                </div>
+                                            </button>
+                                            <button className="p-4" onClick={() => setShowEditor(false)}>
+                                                <div className="flex flex-row items-center bg-red px-2 rounded-md text-dark-secondary">
+                                                    <IconSquareRoundedX size={18} />
+                                                    <span className="ml-2">close</span>
+                                                </div>
+                                            </button>
+                                        </>
+                                    }
+                                    {
+                                        !showEditor && <>
+                                            <button className="p-4" onClick={() => setShowEditor(true)}>
+                                                <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
+                                                    <IconTerminal size={18} />
+                                                    <span className="ml-2">new query</span>
+                                                </div>
+                                            </button>
+                                        </>
+                                    }
+                                </div>
+                                {
+                                    checkBoxList.filter((value, index) => value == true).length > 0 && <>
+                                        <button className="p-4" onClick={() => batchDelete()}>
+                                            <div className="flex flex-row items-center bg-red px-2 rounded-md text-dark-secondary">
+                                                <IconTerminal size={18} />
+                                                <span className="ml-2">delete</span>
+                                            </div>
+                                        </button>
+                                    </>
+                                }
+                            </div>
                         </div>
                     }
                 </div>
@@ -234,7 +269,7 @@ export const ShowData: React.FC<{ data: any, columns: Array<string>, active: boo
 }
 
 
-export const ShowColumn: React.FC<{ data: Array<string> }> = ({ data }) => {
+export const ShowColumn: React.FC<{ data: Array<string>, checkbox: () => void }> = ({ data, checkbox }) => {
     return (
         <thead>
             <tr>
@@ -249,7 +284,7 @@ export const ShowColumn: React.FC<{ data: Array<string> }> = ({ data }) => {
                     </button>
                 </th>
                 <th className="text-center border text-dark-secondary bg-blue w-0 px-1">
-                    <button className="align-middle">
+                    <button className="align-middle" onClick={checkbox}>
                         <IconCheckbox size={18} />
                     </button>
                 </th>

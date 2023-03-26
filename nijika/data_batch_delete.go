@@ -21,10 +21,10 @@ func dataBatchDeleteQuery(ctx context.Context, connID int, table string, id []an
 	// TODO:
 	// get unique identifier from table meta data
 	// for dynamic condition update
-	query := "DELETE FROM " + table + "WHERE id = $2"
+	query := "DELETE FROM " + table + " WHERE id = $1"
 
 	for _, v := range id {
-		_, err = tx.ExecContext(ctx, query, table, v)
+		_, err = tx.ExecContext(ctx, query, v)
 		if err != nil {
 			return err
 		}
