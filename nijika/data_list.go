@@ -75,6 +75,12 @@ func dataList(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 
+	_, exists := externalDB[req.ConnectionID]
+	if !exists {
+		res.Message = "connection does not exists, please connect to databse before do operation"
+		return c.Status(http.StatusBadRequest).JSON(res)
+	}
+
 	data, col, err := dataListQuery(c.Context(), req.ConnectionID, req.Table)
 	if err != nil {
 		res.Message = err.Error()
@@ -86,5 +92,6 @@ func dataList(c *fiber.Ctx) error {
 		"values":  data,
 		"columns": col,
 	}
+
 	return c.Status(http.StatusOK).JSON(res)
 }
