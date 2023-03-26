@@ -1,6 +1,6 @@
 import { ConnectionContext } from "@/context/connection"
 import { Navigation } from "@/layout/navigation"
-import { IconEditCircle, IconSettings2, IconSql, IconSquareRoundedX, IconTerminal, IconTerminal2 } from "@tabler/icons-react"
+import { IconCheckbox, IconEditCircle, IconSettings2, IconSql, IconSquare, IconSquareCheck, IconSquareRoundedX, IconTerminal, IconTerminal2, IconTrash, IconTrashX } from "@tabler/icons-react"
 import React, { useContext, useEffect, useRef, useState } from "react"
 import selectService from "@/service/select"
 import { TableContext } from "@/context/table"
@@ -10,39 +10,36 @@ import { OneDark } from "@/etc/monaco-theme"
 import { NotificationContext } from "@/context/notification"
 import { runQueryService } from "@/service/query"
 import Image from 'next/image'
+import { DeleteDataPayload, deleteDataService } from "@/service/delete_data"
+import { useGetData } from "@/hooks/use_get_data"
 
 export default function ConnectionIndex() {
     const { connection } = useContext(ConnectionContext)
-    const { table, setTable } = useContext(TableContext)
     const { setNotification } = useContext(NotificationContext)
-    const [rows, setRows] = useState<{
-        values: [],
-        columns: []
-    }>()
+    const { rows, setRows } = useGetData()
     const [query, setQuery] = useState<string | undefined>("")
     const monaco = useMonaco();
     const [showEditor, setShowEditor] = useState(false)
+    const { table } = useContext(TableContext)
+    const [reload, setReload] = useState(false)
+    const [checkBoxList, setCheckBoxList] = useState<Array<Boolean>>([])
 
-    const getData = async () => {
-        if (connection != null && table != null) {
-            try {
-                const { data } = await selectService(table, connection.id)
-                setRows(data)
-            } catch (err) {
-                let error = err as Error
-                setNotification({ message: error.message, type: "error" })
-            }
+    const deleteData = async (p: DeleteDataPayload) => {
+        try {
+            await deleteDataService(p)
+            setNotification({ message: "delete row success", type: "success" })
+            setReload(!reload)
+        } catch (err) {
+            let error = err as Error
+            setNotification({ message: error.message, type: "error" })
         }
     }
 
-    const [selectedData, setSelectData] = useState<number>()
     const handleR = (x: number) => {
-        setSelectData(x)
+        let box = checkBoxList
+        box[x] = !box[x]
+        setCheckBoxList([...box])
     }
-
-    useEffect(() => {
-        getData()
-    }, [table])
 
     useEffect(() => {
         if (monaco != null) {
@@ -50,8 +47,26 @@ export default function ConnectionIndex() {
         }
     }, [monaco])
 
-    const valueGetter = useRef();
+    useEffect(() => {
+        if (connection !== null && table != null) {
+            selectService(table, connection.id)
+                .then(({ data }) => {
+                    setRows(data)
+                })
+                .catch((err) => {
+                    let error = err as Error
+                    setNotification({ message: error.message, type: "error" })
+                })
+        }
+    }, [reload])
 
+    useEffect(() => {
+        const box: Array<boolean> = new Array(rows?.values.length)
+        box.fill(false)
+        setCheckBoxList(box)
+    }, [rows])
+
+    const valueGetter = useRef();
     function handleEditorDidMount(_valueGetter: any) {
         valueGetter.current = _valueGetter.current;
     }
@@ -60,12 +75,33 @@ export default function ConnectionIndex() {
         if (connection != null) {
             try {
                 const { data } = await runQueryService({ connection_id: connection.id, query: query as string })
-                setRows(data)
+                if (data.op === "query") {
+                    setRows(data)
+                } else {
+                    setReload(!reload)
+                }
             } catch (err) {
                 let error = err as Error
                 setNotification({ message: error.message, type: "error" })
             }
         }
+    }
+
+    if (connection === undefined || rows === undefined || table === undefined) {
+        return <div className="bg-primary">
+            <div className="pl-[19.5rem] min-h-screen min-w-screen">
+                <Navigation />
+                <div className="flex flex-col w-full h-screen">
+                    <div className="h-full overflow-auto">
+                        <div className="w-full h-full flex flex-col justify-center items-center">
+                            <div>
+                                <Image src="/assets/bochi.webp" alt="bochi" width={400} height={400} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     }
 
     return (
@@ -74,35 +110,56 @@ export default function ConnectionIndex() {
                 <Navigation />
                 <div className="flex flex-col w-full h-screen">
                     <div className="h-full overflow-auto">
-                        {
-                            rows && connection ? (
-                                <div className="m-8 bg-secondary p-8 overflow-y-auto">
-                                    <div className="overflow-auto flex bg-secondary w-full">
-                                        <table className="border-collapse border w-full">
-                                            <ShowColumn data={rows.columns} />
-                                            <tbody>
-                                                {
-                                                    rows.values.map((value, index) => {
-                                                        let x = value as Map<string, any>
-                                                        return index == selectedData ? <tr key={index} onClick={() => handleR(index)}>
-                                                            <ShowData data={x} active={true} columns={rows.columns} />
-                                                        </tr> : <tr key={index} onClick={() => handleR(index)}>
-                                                            <ShowData data={x} active={false} columns={rows.columns} />
+                        <div className="m-8 bg-secondary p-8 overflow-y-auto">
+                            <div className="overflow-auto flex bg-secondary w-full">
+                                <table className="border-collapse border w-full">
+                                    <ShowColumn data={rows.columns} />
+                                    <tbody>
+                                        {
+                                            rows.values.map((value, index) => {
+                                                let x = value as Map<string, any>
+                                                return (
+                                                    <>
+                                                        <tr key={index} onClick={() => handleR(index)}>
+                                                            <td className="border text-center text-sm bg-dark-secondary">
+                                                                <button>
+                                                                    <IconEditCircle size={16} className="text-purple" />
+                                                                </button>
+                                                            </td>
+                                                            <td className="border text-center text-sm bg-dark-secondary">
+                                                                <button onClick={() => deleteData({
+                                                                    connection_id: connection!.id!,
+                                                                    id: value["id"],
+                                                                    table: table!,
+                                                                })}>
+                                                                    <IconTrash size={16} className="text-red" />
+                                                                </button>
+                                                            </td>
+                                                            <td className="border text-center text-sm bg-dark-secondary">
+                                                                <button>
+                                                                    {
+                                                                        checkBoxList[index] ?
+                                                                            <IconSquareCheck size={16} className="text-yellow" onClick={() => handleR(index)} />
+                                                                            : <IconSquare size={16} className="text-white" onClick={() => handleR(index)} />
+                                                                    }
+                                                                </button>
+                                                            </td>
+                                                            {
+                                                                checkBoxList[index] ?
+                                                                    <ShowData data={x} active={true} columns={rows.columns} />
+                                                                    :
+                                                                    <ShowData data={x} active={false} columns={rows.columns} />
+                                                            }
                                                         </tr>
-                                                    })
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            ) : <div className="w-full h-full flex flex-col justify-center items-center">
-                                <div>
-                                    <Image src="/assets/bochi.webp" alt="bochi" width={400} height={400} />
-                                </div>
-
+                                                    </>
+                                                )
+                                            }
+                                            )
+                                        }
+                                    </tbody>
+                                </table>
                             </div>
-
-                        }
+                        </div>
                     </div>
                     {
                         <div className="bg-dark-secondary inset-0 justify-end">
@@ -140,7 +197,16 @@ export default function ConnectionIndex() {
                                     </button>
                                 </>
                             }
-
+                            {
+                                checkBoxList && <>
+                                    <button className="p-4" onClick={() => setShowEditor(true)}>
+                                        <div className="flex flex-row items-center bg-red px-2 rounded-md text-dark-secondary">
+                                            <IconTerminal size={18} />
+                                            <span className="ml-2">delete</span>
+                                        </div>
+                                    </button>
+                                </>
+                            }
                         </div>
                     }
                 </div>
@@ -149,20 +215,8 @@ export default function ConnectionIndex() {
     )
 }
 
-
 export const ShowData: React.FC<{ data: any, columns: Array<string>, active: boolean }> = ({ data, columns, active }) => {
     return <>
-        {
-            active ? <td className="border text-center text-sm bg-dark-secondary">
-                <button>
-                    <IconEditCircle size={16} className="text-yellow" />
-                </button>
-            </td> : <td className="border text-center text-sm bg-dark-secondary">
-                <button>
-                    <IconEditCircle size={16} className="text-purple" />
-                </button>
-            </td>
-        }
         {
             !active ? columns.map(
                 (value, index) =>
@@ -175,7 +229,6 @@ export const ShowData: React.FC<{ data: any, columns: Array<string>, active: boo
                         {data[value]}
                     </td>
             )
-
         }
     </>
 }
@@ -185,9 +238,19 @@ export const ShowColumn: React.FC<{ data: Array<string> }> = ({ data }) => {
     return (
         <thead>
             <tr>
-                <th className="text-center text-dark-secondary bg-blue w-0 px-3">
+                <th className="text-center border text-dark-secondary bg-blue w-0 px-1">
                     <button className="align-middle">
                         <IconSettings2 size={18} />
+                    </button>
+                </th>
+                <th className="text-center border text-dark-secondary bg-blue w-0 px-1">
+                    <button className="align-middle">
+                        <IconTrashX size={18} />
+                    </button>
+                </th>
+                <th className="text-center border text-dark-secondary bg-blue w-0 px-1">
+                    <button className="align-middle">
+                        <IconCheckbox size={18} />
                     </button>
                 </th>
                 {
