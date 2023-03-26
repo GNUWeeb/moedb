@@ -21,4 +21,4 @@
     - `echo NEXT_PUBLIC_API_URL="http://localhost:7000" >> .env.local`
     - `npm install`
     - `npm run dev`
-    - [Duck Duck Go](./request-collection.json).
+    - [Request Collection](./request-collection.json).
