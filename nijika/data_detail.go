@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,12 +12,8 @@ func dataDetailQuery(ctx context.Context, connID int, table string, id any) (map
 	result := make(map[string]any, 0)
 	col := make([]string, 0)
 	query := "SELECT * FROM $1 WHERE id = $2"
-	conn, ok := externalDB[connID]
-	if !ok {
-		return result, col, errors.New("connection not found")
-	}
 
-	row := conn.QueryRowxContext(ctx, query)
+	row := externalDB[connID].QueryRowxContext(ctx, query)
 	cols, err := row.Columns()
 	if err != nil {
 		return result, col, err
@@ -42,6 +37,12 @@ func dataDetail(c *fiber.Ctx) error {
 	err := c.BodyParser(&req)
 	if err != nil {
 		res.Message = err.Error()
+		return c.Status(http.StatusBadRequest).JSON(res)
+	}
+
+	_, exists := externalDB[req.ConnectionID]
+	if !exists {
+		res.Message = "connection does not exists, please connect to databse before do operation"
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 
