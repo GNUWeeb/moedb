@@ -11,9 +11,9 @@ func dataDetailQuery(ctx context.Context, connID int, table string, id any) (map
 
 	result := make(map[string]any, 0)
 	col := make([]string, 0)
-	query := "SELECT * FROM $1 WHERE id = $2"
+	query := "SELECT * FROM " + table + " WHERE id = $1"
 
-	row := externalDB[connID].QueryRowxContext(ctx, query)
+	row := externalDB[connID].QueryRowxContext(ctx, query, id)
 	cols, err := row.Columns()
 	if err != nil {
 		return result, col, err
