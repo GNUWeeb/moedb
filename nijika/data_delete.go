@@ -8,10 +8,14 @@ import (
 )
 
 func dataDeleteQuery(ctx context.Context, connID int, table string, id any) error {
-	query := `
-		DELETE FROM $1 WHERE id = $1	
-	`
-	_, err := externalDB[connID].ExecContext(ctx, query, table, id)
+	// NOTE:
+	// currently can only update table which has column id
+
+	// TODO:
+	// get unique identifier from table meta data
+	// for dynamic condition update
+	query := "DELETE FROM " + table + " WHERE id = $1"
+	_, err := externalDB[connID].ExecContext(ctx, query, id)
 	return err
 }
 
@@ -29,6 +33,12 @@ func dataDelete(c *fiber.Ctx) error {
 	err := c.BodyParser(&req)
 	if err != nil {
 		res.Message = err.Error()
+		return c.Status(http.StatusBadRequest).JSON(res)
+	}
+
+	_, exists := externalDB[req.ConnectionID]
+	if !exists {
+		res.Message = "connection does not exists, please connect to databse before do operation"
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 

@@ -60,8 +60,9 @@ func main() {
 	app.Post("/data/delete", dataDelete)
 	app.Post("/data/batch/delete", dataBatchDelete)
 	app.Post("/data/detail", dataDetail)
-	app.Post("/data/update", dataUpdate)
-	app.Post("/data/batch/update", dataBatchUpdate)
+	app.Put("/data/update", dataUpdate)
+	app.Put("/data/batch/update", dataBatchUpdate)
+	app.Post("/data/batch/insert", dataBatchInsert)
 
 	app.Post("/raw-query", rawsQuery)
 

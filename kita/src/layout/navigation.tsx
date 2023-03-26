@@ -49,7 +49,7 @@ export const Navigation = () => {
                     {
                         showSubmenu ? (
                             listTable.map((value, index) =>
-                                value == table ? <div>
+                                value == table ? <div key={index}>
                                     <button className="flex flex-row py-2 ml-8 w-full" onClick={() => setActiveTable(value)}>
                                         <IconTableFilled size={12} className="self-center text-yellow" />
                                         <div key={index} className="self-center ml-2 text-sm text-green">{value}</div>

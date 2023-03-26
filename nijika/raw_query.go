@@ -3,32 +3,21 @@ package main
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-type rawQueryRequest struct {
-	Query        string `json:"query"`
-	ConnectionID int    `json:"connection_id"`
+func rawSQLCommand(ctx context.Context, connID int, query string) (sql.Result, error) {
+	return externalDB[connID].ExecContext(ctx, query)
 }
 
-func rawSQLCommand(ctx context.Context, p rawQueryRequest) error {
-	_, err := externalDB[p.ConnectionID].ExecContext(ctx, p.Query)
-	return err
-}
-
-func rawSQLQuery(ctx context.Context, p rawQueryRequest) ([]map[string]string, []string, error) {
+func rawSQLQuery(ctx context.Context, connID int, query string) ([]map[string]string, []string, error) {
 	result := make([]map[string]string, 0)
 	col := make([]string, 0)
-	conn, ok := externalDB[p.ConnectionID]
-	if !ok {
-		return result, col, errors.New("connection not found")
-	}
 
-	rows, err := conn.QueryxContext(ctx, p.Query)
+	rows, err := externalDB[connID].QueryxContext(ctx, query)
 	if err != nil && err != sql.ErrNoRows {
 		return result, col, err
 	}
@@ -70,7 +59,12 @@ func rawSQLQuery(ctx context.Context, p rawQueryRequest) ([]map[string]string, [
 
 func rawsQuery(c *fiber.Ctx) error {
 
-	req := rawQueryRequest{}
+	type request struct {
+		Query        string `json:"query"`
+		ConnectionID int    `json:"connection_id"`
+	}
+
+	req := request{}
 	res := response{}
 
 	err := c.BodyParser(&req)
@@ -79,27 +73,41 @@ func rawsQuery(c *fiber.Ctx) error {
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 
-	if strings.Contains(req.Query, "insert into") || strings.Contains(req.Query, "update from") || strings.Contains(req.Query, "delete from") {
-		err := rawSQLCommand(c.Context(), req)
+	_, exists := externalDB[req.ConnectionID]
+	if !exists {
+		res.Message = "connection does not exists, please connect to databse before do operation"
+		return c.Status(http.StatusBadRequest).JSON(res)
+	}
+
+	// NOTE:
+	// still looking for a better way to detect SQL opeartion is query or command
+	q := strings.ToLower(req.Query)
+	if strings.Contains("select ", q) {
+		data, col, err := rawSQLQuery(c.Context(), req.ConnectionID, req.Query)
 		if err != nil {
 			res.Message = err.Error()
 			return c.Status(http.StatusInternalServerError).JSON(res)
 		}
 
-		res.Message = "success"
-		return c.Status(http.StatusOK).JSON(res)
-
+		res.Message = "OK"
+		res.Data = map[string]any{
+			"op":      "query",
+			"values":  data,
+			"columns": col,
+		}
 	}
-	data, col, err := rawSQLQuery(c.Context(), req)
+
+	sqlResult, err := rawSQLCommand(c.Context(), req.ConnectionID, req.Query)
 	if err != nil {
 		res.Message = err.Error()
 		return c.Status(http.StatusInternalServerError).JSON(res)
 	}
 
-	res.Message = "OK"
 	res.Data = map[string]any{
-		"values":  data,
-		"columns": col,
+		"op":     "command",
+		"result": sqlResult,
 	}
+
+	res.Message = "success"
 	return c.Status(http.StatusOK).JSON(res)
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,12 +18,7 @@ func tableListQuery(ctx context.Context, connID int) ([]string, error) {
 			ORDER BY tablename ASC
 		`
 
-	conn, exists := externalDB[connID]
-	if !exists {
-		return t, errors.New("connection not found")
-	}
-
-	rows, err := conn.QueryxContext(ctx, query)
+	rows, err := externalDB[connID].QueryxContext(ctx, query)
 	if err != nil && err != sql.ErrNoRows {
 		return t, err
 	}
@@ -54,6 +48,12 @@ func tableList(c *fiber.Ctx) error {
 	err := c.BodyParser(&req)
 	if err != nil {
 		res.Message = err.Error()
+		return c.Status(http.StatusBadRequest).JSON(res)
+	}
+
+	_, exists := externalDB[req.ConnectionID]
+	if !exists {
+		res.Message = "connection does not exists, please connect to databse before do operation"
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 

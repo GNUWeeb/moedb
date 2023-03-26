@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,15 +9,20 @@ import (
 
 func dataUpdateQuery(ctx context.Context, connID int, table string, e map[string]any) error {
 
-	query := fmt.Sprintf("UPDATE %s SET ", table)
+	query := "UPDATE " + table + " SET "
+	columns := ""
+	condittion := ""
 
 	for k := range e {
-		query += fmt.Sprintf(" %s=:%s ", k, k)
+		columns += " " + k + "=:" + k + ","
+		// NOTE:
+		// currently can only delete table which has column id
 		if k == "id" {
-			query += fmt.Sprintf(" WHERE %s=:%s ", k, k)
+			condittion = " WHERE " + k + "=:" + k
 		}
 	}
 
+	query += columns[:len(columns)-1] + condittion
 	_, err := externalDB[connID].NamedExecContext(ctx, query, e)
 	return err
 }
@@ -37,6 +41,12 @@ func dataUpdate(c *fiber.Ctx) error {
 	err := c.BodyParser(&req)
 	if err != nil {
 		res.Message = err.Error()
+		return c.Status(http.StatusBadRequest).JSON(res)
+	}
+
+	_, exists := externalDB[req.ConnectionID]
+	if !exists {
+		res.Message = "connection does not exists, please connect to databse before do operation"
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 
