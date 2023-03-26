@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,18 +13,29 @@ func dataBatchUpdateQuery(ctx context.Context, connID int, table string, e []map
 	if err != nil {
 		return err
 	}
-
 	defer tx.Rollback()
 
 	for _, v := range e {
-		query := fmt.Sprintf("UPDATE %s SET ", table)
+
+		query := "UPDATE " + table + " SET "
+		columns := ""
+		condittion := ""
+
 		for k := range v {
-			query += fmt.Sprintf(" %s=:%s ", k, k)
+			columns += " " + k + "=:" + k + ","
+
+			// NOTE:
+			// currently can only update table which has column id
+
+			// TODO:
+			// get unique identifier from table meta data
+			// for dynamic condition update
 			if k == "id" {
-				query += fmt.Sprintf(" WHERE %s=:%s ", k, k)
+				condittion = " WHERE " + k + "=:" + k
 			}
 		}
 
+		query += columns[:len(columns)-1] + condittion
 		_, err = tx.NamedExecContext(ctx, query, v)
 		if err != nil {
 			return err
@@ -38,6 +48,7 @@ func dataBatchUpdateQuery(ctx context.Context, connID int, table string, e []map
 	}
 
 	return err
+
 }
 
 func dataBatchUpdate(c *fiber.Ctx) error {
@@ -54,6 +65,12 @@ func dataBatchUpdate(c *fiber.Ctx) error {
 	err := c.BodyParser(&req)
 	if err != nil {
 		res.Message = err.Error()
+		return c.Status(http.StatusBadRequest).JSON(res)
+	}
+
+	_, exists := externalDB[req.ConnectionID]
+	if !exists {
+		res.Message = "connection does not exists, please connect to databse before do operation"
 		return c.Status(http.StatusBadRequest).JSON(res)
 	}
 
