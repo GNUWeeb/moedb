@@ -16,7 +16,7 @@ export const useGetData = () => {
 
     useEffect(() => {
         if (connection != null && table != null) {
-            selectService(table, connection.id)
+            selectService(table.name, connection.id)
                 .then(({ data }) => {
                     setRows(data)
                     response = data

@@ -55,6 +55,7 @@ func main() {
 	app.Put("/connection/update", connectionUpdate)
 
 	app.Post("/table/list", tableList)
+	app.Post("/table/metadata", tableMetadata)
 
 	app.Post("/data/list", dataList)
 	app.Post("/data/delete", dataDelete)
