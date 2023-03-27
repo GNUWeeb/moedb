@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -15,12 +14,8 @@ func dataListQuery(ctx context.Context, connID int, table string) ([]map[string]
 	result := make([]map[string]string, 0)
 	col := make([]string, 0)
 	query := fmt.Sprintf(`SELECT * FROM "%s"`, table)
-	conn, ok := externalDB[connID]
-	if !ok {
-		return result, col, errors.New("connection not found")
-	}
 
-	rows, err := conn.QueryxContext(ctx, query)
+	rows, err := externalDB[connID].QueryxContext(ctx, query)
 	if err != nil && err != sql.ErrNoRows {
 		return result, col, err
 	}

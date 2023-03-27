@@ -37,7 +37,7 @@ export default function ConnectionIndex() {
         }
     }
 
-    const handleR = (x: number) => {
+    const handleSelect = (x: number) => {
         let box = checkBoxList
         box[x] = !box[x]
         setCheckBoxList([...box])
@@ -57,7 +57,7 @@ export default function ConnectionIndex() {
 
     useEffect(() => {
         if (connection !== null && table != null) {
-            selectService(table, connection.id)
+            selectService(table.name, connection.id)
                 .then(({ data }) => {
                     setRows(data)
                 })
@@ -103,11 +103,10 @@ export default function ConnectionIndex() {
                     id.push(rows!.values[index]["id"])
                 }
             })
-
             await batchDeleteService({
                 connection_id: connection?.id!,
                 id: id,
-                table: table!,
+                table: table?.name!,
             })
             setNotification({ message: "delete rows success", type: "success" })
             setReload(!reload)
@@ -116,7 +115,6 @@ export default function ConnectionIndex() {
             setNotification({ message: error.message, type: "error" })
         }
     }
-
 
     if (connection === undefined || rows === undefined || table === undefined) {
         return <div className="bg-primary">
@@ -147,65 +145,57 @@ export default function ConnectionIndex() {
                                     <ShowColumn data={rows.columns} checkbox={checkAll} />
                                     <tbody>
                                         {
-                                            rows.values.map((value, index) => {
-                                                let x = value as Map<string, any>
-                                                return (
-                                                    <>
-                                                        <tr key={index} onClick={() => handleR(index)}>
-                                                            <td className="border text-center text-sm bg-dark-secondary">
-                                                                <button>
-                                                                    <IconEditCircle size={16} className="text-purple" />
-                                                                </button>
-                                                            </td>
-                                                            <td className="border text-center text-sm bg-dark-secondary">
-                                                                <button onClick={() => deleteData({
-                                                                    connection_id: connection!.id!,
-                                                                    id: value["id"],
-                                                                    table: table!,
-                                                                })}>
-                                                                    <IconTrash size={16} className="text-red" />
-                                                                </button>
-                                                            </td>
-                                                            <td className="border text-center text-sm bg-dark-secondary">
-                                                                <button>
-                                                                    {
-                                                                        checkBoxList[index] ?
-                                                                            <IconSquareCheck size={16} className="text-yellow" onClick={() => handleR(index)} />
-                                                                            : <IconSquare size={16} className="text-white" onClick={() => handleR(index)} />
-                                                                    }
-                                                                </button>
-                                                            </td>
-                                                            {
-                                                                checkBoxList[index] ?
-                                                                    <ShowData data={x} active={true} columns={rows.columns} />
-                                                                    :
-                                                                    <ShowData data={x} active={false} columns={rows.columns} />
-                                                            }
-                                                        </tr>
-                                                    </>
-                                                )
-                                            }
-                                            )
-                                        }
+                                            rows.values.map((value, index) => <tr key={index} onClick={() => handleSelect(index)}>
+                                                <td className="border text-center text-sm bg-dark-secondary">
+                                                 <button>
+                                                        <IconEditCircle size={16} className="text-purple" />
+                                                    </button>
+                                                </td>
+                                                <td className="border text-center text-sm bg-dark-secondary">
+                                                    <button onClick={() => deleteData({
+                                                        connection_id: connection!.id!,
+                                                        id: value["id"],
+                                                        table: table?.name!,
+                                                    })}>
+                                                        <IconTrash size={16} className="text-red" />
+                                                    </button>
+                                                </td>
+                                                <td className="border text-center text-sm bg-dark-secondary">
+                                                    <button>
+                                                        {
+                                                            checkBoxList[index] ?
+                                                                <IconSquareCheck size={16} className="text-yellow" onClick={() => handleSelect(index)} />
+                                                                : <IconSquare size={16} className="text-white" onClick={() => handleSelect(index)} />
+                                                        }
+                                                    </button>
+                                                </td>
+                                                {
+                                                    checkBoxList[index] ?
+                                                        <ShowData data={value} active={true} columns={rows.columns} />
+                                                        :
+                                                        <ShowData data={value} active={false} columns={rows.columns} />
+                                                }
+                                            </tr>
+                                            )}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-                    {
-                        <div className="bg-dark-secondary inset-0 justify-end">
-                            <div className="flex flex-row justify-between">
-                                <div>
-                                    {
-                                        monaco && showEditor && <>
-                                            <MonacoEditor
-                                                defaultLanguage="sql"
-                                                theme="onedark"
-                                                height="30vh"
-                                                className="font-bold font-editor border  h-full py-4"
-                                                onMount={handleEditorDidMount}
-                                                onChange={(e) => setQuery(e)}
-                                            />
+                    <div className="bg-dark-secondary inset-0 justify-end">
+                        <div className="w-full flex flex-col">
+                            {
+                                monaco && showEditor && <>
+                                    <MonacoEditor
+                                        defaultLanguage="sql"
+                                        theme="onedark"
+                                        height="30vh"
+                                        className="font-bold font-editor border  h-full py-4"
+                                        onMount={handleEditorDidMount}
+                                        onChange={(e) => setQuery(e)}
+                                    />
+                                    <div className="flex flex-row justify-between">
+                                        <div>
                                             <button className="p-4" onClick={() => runQuery()}>
                                                 <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
                                                     <IconTerminal2 size={18} />
@@ -218,32 +208,48 @@ export default function ConnectionIndex() {
                                                     <span className="ml-2">close</span>
                                                 </div>
                                             </button>
-                                        </>
-                                    }
-                                    {
-                                        !showEditor && <>
-                                            <button className="p-4" onClick={() => setShowEditor(true)}>
-                                                <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
-                                                    <IconTerminal size={18} />
-                                                    <span className="ml-2">new query</span>
-                                                </div>
-                                            </button>
-                                        </>
-                                    }
-                                </div>
-                                {
-                                    checkBoxList.filter((value, index) => value == true).length > 0 && <>
-                                        <button className="p-4" onClick={() => batchDelete()}>
-                                            <div className="flex flex-row items-center bg-red px-2 rounded-md text-dark-secondary">
+                                        </div>
+                                        <div>
+                                            {
+                                                checkBoxList.filter((value) => value == true).length > 0 && <>
+                                                    <button className="p-4" onClick={() => batchDelete()}>
+                                                        <div className="flex flex-row items-center bg-red px-2 rounded-md text-dark-secondary">
+                                                            <IconTerminal size={18} />
+                                                            <span className="ml-2">delete</span>
+                                                        </div>
+                                                    </button>
+                                                </>
+                                            }
+                                        </div>
+                                    </div>
+                                </>
+                            }
+                            {
+                                !showEditor && <div className="flex flex-row justify-between">
+                                    <div>
+                                        <button className="p-4" onClick={() => setShowEditor(true)}>
+                                            <div className="flex flex-row items-center bg-green px-2 rounded-md text-dark-secondary">
                                                 <IconTerminal size={18} />
-                                                <span className="ml-2">delete</span>
+                                                <span className="ml-2">new query</span>
                                             </div>
                                         </button>
-                                    </>
-                                }
-                            </div>
+                                    </div>
+                                    <div>
+                                        {
+                                            checkBoxList.filter((value) => value == true).length > 0 && <>
+                                                <button className="p-4" onClick={() => batchDelete()}>
+                                                    <div className="flex flex-row items-center bg-red px-2 rounded-md text-dark-secondary">
+                                                        <IconTerminal size={18} />
+                                                        <span className="ml-2">delete</span>
+                                                    </div>
+                                                </button>
+                                            </>
+                                        }
+                                    </div>
+                                </div>
+                            }
                         </div>
-                    }
+                    </div>
                 </div>
             </div>
         </div >

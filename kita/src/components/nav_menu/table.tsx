@@ -1,20 +1,16 @@
-import { ConnectionContext } from "@/context/connection"
-import { TableContext } from "@/context/table"
-import { getTableService } from "@/service/get_table"
-import selectService from "@/service/select"
-import { IconArrowLeft, IconArrowRight, IconCaretRight, IconCircle, IconCircle0Filled, IconCircle1Filled, IconCircleCaretRight, IconTable } from "@tabler/icons-react"
-import React, { useContext, useEffect, useState } from "react"
+import { IconCaretDown, IconCaretRight, IconTable } from "@tabler/icons-react"
+import React from "react"
 
-export const NavTable: React.FC<{ onClick: Function }> = ({ onClick }) => {
+export const NavTable: React.FC<{ onClick: Function, active: boolean }> = ({ onClick, active }) => {
     return (
         <button className="w-full flex flex-row" onClick={() => onClick()}>
-            <div className="p-4" >
-                <IconTable />
+            <div className="p-4 bg-red text-dark-secondary" >
+         <IconTable />
             </div>
-            <div className="self-center w-full flex flex-row justify-between">
+            <div className="self-center w-full flex flex-row justify-between ml-6">
                 <div>Table</div>
                 <div className="mr-4">
-                    <IconCaretRight />
+                    {active ? <IconCaretDown /> : <IconCaretRight/>}
                 </div>
             </div>
         </button>

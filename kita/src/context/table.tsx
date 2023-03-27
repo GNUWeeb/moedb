@@ -4,16 +4,21 @@ import React, {
   useState,
 } from 'react';
 
+type Table = {
+  name: string,
+  pk_column?: string
+}
+
 export const TableContext = createContext<{
-  table: string | null,
-  setTable: (v: string) => void
+  table: Table | null,
+  setTable: (v: Table) => void
 }>({
   table: null,
   setTable: () => { }
 })
 
 export const TableProvider: React.FC<{ children: JSX.Element }> = ({ children }) => {
-  const [table, setTable] = useState<string | null>(null);
+  const [table, setTable] = useState<Table | null>(null);
   return (
     <TableContext.Provider
       value={{
