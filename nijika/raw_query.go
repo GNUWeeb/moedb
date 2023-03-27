@@ -82,19 +82,20 @@ func rawsQuery(c *fiber.Ctx) error {
 	// NOTE:
 	// still looking for a better way to detect SQL opeartion is query or command
 	q := strings.ToLower(req.Query)
-	if strings.Contains("select ", q) {
+	if strings.Contains(q, "select") {
 		data, col, err := rawSQLQuery(c.Context(), req.ConnectionID, req.Query)
 		if err != nil {
 			res.Message = err.Error()
 			return c.Status(http.StatusInternalServerError).JSON(res)
 		}
 
-		res.Message = "OK"
+		res.Message = "success"
 		res.Data = map[string]any{
 			"op":      "query",
 			"values":  data,
 			"columns": col,
 		}
+		return c.Status(http.StatusOK).JSON(res)
 	}
 
 	sqlResult, err := rawSQLCommand(c.Context(), req.ConnectionID, req.Query)
