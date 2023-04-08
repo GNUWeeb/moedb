@@ -1,0 +1,18 @@
+name: moedb-main-pipeline
+
+on:
+
+  push:
+    branches:
+      - "main"
+    paths:
+      - ".github/workflows/main.yaml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@master

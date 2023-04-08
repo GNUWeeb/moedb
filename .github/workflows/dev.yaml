@@ -1,22 +1,27 @@
-name: Moedb
+name: moedb-dev-pipeline
 
 on:
+
   push:
-    branches: [ dev ]
-  pull_request:
-    branches: [ dev ]
+    branches:
+      - "dev"
+    paths:
+      - ".github/workflows/dev.yaml"
 
 jobs:
 
   build:
     runs-on: ubuntu-latest
+    environment: dev
 
     steps:
     - name: Check out repository
       uses: actions/checkout@master
+      with:
+        ref: dev
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: 1.19
     - name: build moedb-server
@@ -26,13 +31,13 @@ jobs:
           CGO_ENABLED=1 go build -o moedb-server
 
     - name: Upload binary artifacts to next stage
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: binary-file
         path: ./nijika/moedb-server
 
     - name: Upload systemd artifacts to next stage
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: systemd
         path: ./nijika/etc/moedb-server.service
@@ -40,15 +45,16 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    environment: dev
 
     steps:
     - name: download binary artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: binary-file
 
     - name: download systemd artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: systemd
 
@@ -71,4 +77,8 @@ jobs:
         PORT: ${{ secrets.PORT }}
         KEY: ${{ secrets.SSHKEY }}
         script: |
-                systemctl restart moedb-server.service
+                cd ~/moedb
+                echo ${{ secrets.PASSWORD }} | sudo -S mv moedb-server.service /lib/systemd/system/moedb-server.service 
+                echo ${{ secrets.PASSWORD }} | sudo -S mv moedb-server /bin/moedb-server
+                echo ${{ secrets.PASSWORD }} | sudo -S chmod +x /bin/moedb-server
+                echo ${{ secrets.PASSWORD }} | sudo -S systemctl restart moedb-server.service
