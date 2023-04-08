@@ -1,0 +1,31 @@
+nijika/tmp/
+nijika/sql.db
+
+kita/node_modules
+kita/.pnp
+kita/.pnp.js
+
+# testing
+kita/coverage
+
+# next.js
+kita/.next/
+kita/out/
+
+# production
+kita/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+kita/npm-debug.log*
+kita/yarn-debug.log*
+kita/yarn-error.log*
+kita/.pnpm-debug.log*
+kita/.env*.local
+kita/.vercel
+kita/*.tsbuildinfo
+kita/next-env.d.ts
+kita/tmp/
