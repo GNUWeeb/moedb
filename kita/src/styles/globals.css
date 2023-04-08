@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-    @apply dark;
+    @apply light;
 }
 
 .dark {
@@ -41,11 +41,11 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    box-shadow: inset 10px 10px 10px rgb(107, 109, 112);
+    box-shadow: inset 10px 10px 10px rgba(116, 108, 108, 0.411);
 }
 
 ::-webkit-scrollbar-track {
-    background-color: #62676d;
+    background-color: #62676d00;
 }
 
 html {
@@ -65,10 +65,18 @@ html {
     --monaco-monospace-font: 'JetBrains Mono', monospace !important;
 }
 
-.border {
-    border-left-color: var(--color-text-dark);
-    border-bottom: 1px solid;
-    border-bottom-color: var(--color-text-dark);
-    border-right-color: var(--color-text-dark);
-    border-top-color: var(--color-text-dark);
+table td:first-child {
+    padding-left: 2rem;
+}
+
+table th:first-child {
+    padding-left: 2rem;
+}
+
+table td:last-child {
+    padding-right: 2rem;
+}
+
+table th:last-child {
+    padding-right: 2rem;
 }
