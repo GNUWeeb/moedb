@@ -3,8 +3,9 @@ import type { AppProps } from 'next/app';
 import { ConnectionProvider } from '@/context/connection';
 import { TableProvider } from '@/context/table';
 import { NotificationProvider } from '@/context/notification';
+import dynamic from 'next/dynamic';
 
-export default function MyApp({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <NotificationProvider>
@@ -20,5 +21,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   )
 }
 
-
+export default dynamic(() => Promise.resolve(MyApp), {
+  ssr: false,
+});
 
