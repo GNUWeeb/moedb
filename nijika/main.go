@@ -67,6 +67,9 @@ func main() {
 
 	app.Post("/raw-query", rawsQuery)
 
+	app.Post("/database/list", databaseList)
+	app.Post("/database/switch", databaseSwitch)
+
 	shutDown := make(chan bool, 1)
 	go func() {
 		err = app.Listen(":7000")
