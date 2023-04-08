@@ -24,6 +24,7 @@ module.exports = {
     colors: {
       'dark-primary': '#131a1c',
       'dark-secondary': '#1b2224',
+      'dark-text': '#5e6378',
       gray1: "#3c3f49",
       aqua: '#51a39f',
       red: '#e74c4c',
@@ -32,7 +33,7 @@ module.exports = {
       yellow: '#e59e67',
       blue: '#58acc4',
       purple: '#cd69cc',
-      white: '#c4c4c4',
+      white: '#fff',
     },
   },
   plugins: [],

@@ -3,18 +3,18 @@ import { connectService } from "@/service/connect"
 import { Connection } from "@/type/connection"
 import { getConnectionService } from "@/service/get_connection"
 import { IconBox, IconDatabase, IconEdit, IconOutlet, IconPlus, IconServer, IconTrash, IconUser } from "@tabler/icons-react"
-import React, { useContext, useEffect, useState } from "react"
+import React, { useCallback, useContext, useEffect, useState } from "react"
 import { useRouter } from 'next/router'
-import Image from "next/image"
 import { TopNav } from "@/components/top_nav/top_nav"
 import { createConnectionService } from "@/service/create_connection"
 import { deleteConnectionService } from "@/service/delete_connection"
 import { NotificationContext } from "@/context/notification"
+import { DriverIcon } from "@/components/driver"
 
 export default function Home() {
     const router = useRouter()
     const [connections, setConnections] = useState<Array<Connection>>([])
-    const { setConnection } = useContext(ConnectionContext)
+    const { setConnection,connection } = useContext(ConnectionContext)
     const { setNotification } = useContext(NotificationContext)
     const [newConnForm, setNewConnForm] = useState(false)
     const [newConn, setNewConn] = useState<Connection>({
@@ -28,7 +28,7 @@ export default function Home() {
         username: ""
     })
 
-    const getConnection = async () => {
+    const getConnection = useCallback(async () => {
         try {
             const res = await getConnectionService()
             setConnections(res.data)
@@ -36,7 +36,7 @@ export default function Home() {
             let error = err as Error
             setNotification({ message: error.message, type: "error" })
         }
-    }
+    }, [setNotification])
 
     const connect = async (conn: Connection) => {
         try {
@@ -75,7 +75,7 @@ export default function Home() {
 
     useEffect(() => {
         getConnection()
-    }, [])
+    }, [getConnection])
 
     return (
         <div className="flex flex-col w-screen h-screen">
@@ -87,7 +87,7 @@ export default function Home() {
                             connections && <div className="flex flex-col items-center mb-8">
                                 {
                                     connections.map((value, index) => {
-                                        return <div className="flex flex-row border-1 rounded-lg border w-full p-4 my-4">
+                                        return <div className="flex flex-row border-1 rounded-lg border w-full p-4 my-4" key={index}>
                                             <div>
                                                 <DriverIcon driver={value.driver} />
                                             </div>
@@ -204,27 +204,4 @@ export default function Home() {
         </div>
 
     )
-}
-
-export const ShowColumn: React.FC<{ data: Array<string> }> = ({ data }) => {
-    return (
-        <thead>
-            <tr>
-                {
-                    data.map((value, index) => {
-                        return <th className="border border-slate-300 text-slate-800 p-2" key={index}>{value}</th>
-                    })
-                }
-            </tr>
-        </thead>
-    )
-}
-
-export const DriverIcon: React.FC<{ driver: string }> = ({ driver }) => {
-    switch (driver) {
-        case "postgres":
-            return <Image src="/assets/postgres.png" alt="postgres" width={64} height={64} />
-        default:
-            return null
-    }
 }

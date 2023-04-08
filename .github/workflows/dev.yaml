@@ -1,0 +1,84 @@
+name: moedb-dev-pipeline
+
+on:
+
+  push:
+    branches:
+      - "dev"
+    paths:
+      - ".github/workflows/dev.yaml"
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@master
+      with:
+        ref: dev
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
+    - name: build moedb-server
+      run: |
+          cd nijika
+          go mod download
+          CGO_ENABLED=1 go build -o moedb-server
+
+    - name: Upload binary artifacts to next stage
+      uses: actions/upload-artifact@v3
+      with:
+        name: binary-file
+        path: ./nijika/moedb-server
+
+    - name: Upload systemd artifacts to next stage
+      uses: actions/upload-artifact@v3
+      with:
+        name: systemd
+        path: ./nijika/etc/moedb-server.service
+    
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+    - name: download binary artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: binary-file
+
+    - name: download systemd artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: systemd
+
+    - name: upload artifacts to server
+      uses: appleboy/scp-action@master
+      env:
+        HOST: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PORT: ${{ secrets.PORT }}
+        KEY: ${{ secrets.SSHKEY }}
+      with:
+        source: "moedb-server.service,moedb-server"
+        target: "~/moedb" 
+    
+    - name: restart service
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        USERNAME: ${{ secrets.USERNAME }}
+        PORT: ${{ secrets.PORT }}
+        KEY: ${{ secrets.SSHKEY }}
+        script: |
+                cd ~/moedb
+                echo ${{ secrets.PASSWORD }} | sudo -S mv moedb-server.service /lib/systemd/system/moedb-server.service 
+                echo ${{ secrets.PASSWORD }} | sudo -S mv moedb-server /bin/moedb-server
+                echo ${{ secrets.PASSWORD }} | sudo -S chmod +x /bin/moedb-server
+                echo ${{ secrets.PASSWORD }} | sudo -S systemctl restart moedb-server.service

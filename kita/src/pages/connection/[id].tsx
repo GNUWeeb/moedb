@@ -1,15 +1,10 @@
-import { ConnectionContext } from "@/context/connection"
-import { connectService } from "@/service/connect"
 import { Connection } from "@/type/connection"
 import { getDetailConnectionService } from "@/service/detail_connection"
 import { updateConnectionService } from "@/service/update_connection"
-import { IconBox, IconDatabase, IconEdit, IconOutlet, IconPlus, IconServer, IconTrash, IconUser } from "@tabler/icons-react"
 import React, { useContext, useEffect, useState } from "react"
 import { useRouter } from 'next/router'
 import Image from "next/image"
 import { TopNav } from "@/components/top_nav/top_nav"
-import { createConnectionService } from "@/service/create_connection"
-import { deleteConnectionService } from "@/service/delete_connection"
 import { NotificationContext } from "@/context/notification"
 
 export default function EditConnection() {
@@ -17,18 +12,6 @@ export default function EditConnection() {
     const { id } = router.query
     const { setNotification } = useContext(NotificationContext)
     const [connection, setConnection] = useState<Connection>()
-
-    const getDetailConnection = async () => {
-        try {
-            if (id != undefined) {
-                const { data } = await getDetailConnectionService(parseInt(id.toString()))
-                setConnection(data)
-            }
-        } catch (err) {
-            const error = err as Error
-            setNotification({ message: error.message, type: "error" })
-        }
-    }
 
     const updateCOnnection = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault()
@@ -43,8 +26,19 @@ export default function EditConnection() {
     }
 
     useEffect(() => {
+        const getDetailConnection = async () => {
+            try {
+                if (id != undefined) {
+                    const { data } = await getDetailConnectionService(parseInt(id.toString()))
+                    setConnection(data)
+                }
+            } catch (err) {
+                const error = err as Error
+                setNotification({ message: error.message, type: "error" })
+            }
+        }
         getDetailConnection()
-    }, [])
+    }, [id, setNotification])
 
     return (
         <div className="flex flex-col w-screen h-screen">
@@ -110,7 +104,7 @@ export default function EditConnection() {
                             save
                         </button>
                     </div>
-                </div>  
+                </div>
             </div >
         </div>
     )

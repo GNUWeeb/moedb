@@ -1,0 +1,11 @@
+[Unit]
+Description     =   moedb server service
+After           =   network.target
+
+[Service]
+ExecStart = /bin/moedb-server
+ExecStop  = /bin/kill $MAINPID
+KillMode  = none
+
+[Install]
+WantedBy=multi-user.target
