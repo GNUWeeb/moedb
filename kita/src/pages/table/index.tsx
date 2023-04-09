@@ -5,8 +5,8 @@ import selectService from "@/service/select"
 import { NotificationContext } from "@/context/notification"
 import { runQueryService } from "@/service/query"
 import { batchDeleteService } from "@/service/batch_delete"
-import { atom, useAtom } from "jotai"
-import { PrimaryNavigation, listTableAtom, activeTableAtom } from "@/components/side_nav/primary"
+import { useAtom } from "jotai"
+import { PrimaryNavigation, listTableAtom, activeTableAtom, listDatabseAtom, activeDatabaseAtom } from "@/components/side_nav/primary"
 import { TableNavigation } from "@/components/side_nav/table"
 import { orderByAtom, orderTypeAtom, TableHead } from "@/components/table_head";
 import { Loading } from "@/components/loading";
@@ -18,6 +18,8 @@ import { queryAtom } from "@/components/editor";
 import { TableRowBody } from "@/components/table_row_body"
 
 export default function Table() {
+
+    // context
     const { connection } = useContext(ConnectionContext)
     const { setNotification } = useContext(NotificationContext)
 
@@ -34,7 +36,9 @@ export default function Table() {
     // shared state
     const [activeTable, setActiveTable] = useAtom(activeTableAtom)
     const [orderType] = useAtom(orderTypeAtom)
-    const [orderBy] = useAtom(orderByAtom)
+    const [orderBy, setOrderBy] = useAtom(orderByAtom)
+    const [databases] = useAtom(listDatabseAtom)
+    const [activeDB, setActiveDB] = useAtom(activeDatabaseAtom)
 
     const handleCheckList = (x: number) => {
         let checkList = checkBoxList
@@ -152,6 +156,7 @@ export default function Table() {
                         pagination: res.pagination,
                         values: res.data.values,
                     })
+                    setOrderBy("")
                 })
                 .catch((err) => {
                     let error = err as Error
@@ -177,6 +182,7 @@ export default function Table() {
                         pagination: res.pagination,
                         values: res.data.values,
                     })
+                    setOrderBy("")
                 })
                 .catch((err) => {
                     let error = err as Error
@@ -208,7 +214,7 @@ export default function Table() {
                     setNotification({ message: error.message, type: "error" })
                 })
         }
-    }, [orderBy, orderType, activeTable, connection, search, setNotification])
+    }, [orderBy, orderType, connection, search, setNotification])
 
     useEffect(() => {
         const checkList: Array<boolean> = new Array(rows?.values.length)
@@ -217,10 +223,10 @@ export default function Table() {
     }, [rows])
 
 
-    if (connection === undefined || rows === undefined ) {
+    if (connection === undefined || rows === undefined) {
         return <div className="bg-primary min-w-screen min-h-screen flex flex-row">
             <PrimaryNavigation />
-            <TableNavigation/>
+            <TableNavigation />
             <Loading />
         </div>
     }
@@ -236,7 +242,17 @@ export default function Table() {
         <div className="flex flex-col w-full h-screen">
             <div className="h-full overflow-auto">
                 <div className="bg-secondary h-full overflow-y-auto border-l-2 ">
-                    <div className="m-8 flex flex-row justify-between items-center">
+                    <div className="mx-8 mt-4">
+                        <select
+                            id="database"
+                            className="p-2 bg-primary border-0 outline-none focus:border-none"
+                            value={activeDB}
+                            onChange={(e) => setActiveDB(e.target.value)}
+                        >
+                            {databases.map((value, index) => <option className="" value={value} key={index}>{value}</option>)}
+                        </select>
+                    </div>
+                    <div className="mx-8 mt-2 flex flex-row justify-between items-center">
                         <div className="flex flex-row items-center text-lg">
                             <span className="font-bold text-gray-primary">Tables</span>
                             <span className="mx-2">/</span>

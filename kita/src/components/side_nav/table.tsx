@@ -1,15 +1,34 @@
+import { ConnectionContext } from "@/context/connection"
+import { NotificationContext } from "@/context/notification"
+import { switchDatabaseService } from "@/service/database_switch"
+import { getTableService } from "@/service/get_table"
 import { IconTableFilled } from "@tabler/icons-react"
 import { atom, useAtom } from "jotai"
-import { useEffect, useState } from "react"
-import { activeTableAtom, listTableAtom } from "./primary"
+import { useContext, useEffect, useState } from "react"
+import { activeDatabaseAtom, activeTableAtom, listTableAtom } from "./primary"
 
 export const TableNavigation: React.FC<{}> = ({ }) => {
     const [activeTable, setActiveTable] = useAtom(activeTableAtom)
+    const { setNotification } = useContext(NotificationContext)
+    const { connection } = useContext(ConnectionContext)
     const handleSetActiveMenu = (table: string) => {
         setActiveTable(table)
     }
-    const [table] = useAtom(listTableAtom)
+    const [table, setListTable] = useAtom(listTableAtom)
     const [items, setItems] = useState<Array<string>>([])
+    const [activeDB] = useAtom(activeDatabaseAtom)
+
+    const getTable = async () => {
+        try {
+            if (connection != null) {
+                const { data } = await getTableService(connection.id)
+                setListTable(data)
+            }
+        } catch (err) {
+            let error = err as Error
+            setNotification({ message: error.message, type: "error" })
+        }
+    }
 
     useEffect(() => {
         setItems(table)
@@ -23,6 +42,23 @@ export const TableNavigation: React.FC<{}> = ({ }) => {
             setItems(table)
         }
     }
+
+    useEffect(() => {
+        const switchDB = async () => {
+            try {
+                await switchDatabaseService({
+                    connection_id: connection!.id,
+                    db_name: activeDB,
+                })
+                getTable()
+            } catch (err) {
+                let error = err as Error
+                setNotification({ message: error.message, type: "error" })
+            }
+        }
+        switchDB()
+    }, [activeDB])
+
 
     return (
         <div className="w-1/8 bg-secondary border-l-2 flex flex-col spcae-y-4">
